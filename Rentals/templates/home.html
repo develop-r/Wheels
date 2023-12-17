@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+    {% if user.is_authenticated %}
+        {% include 'cars.html' %}
+    {% else %}
+    <main class="d-flex w-100">
+        <div class="container d-flex flex-column justify-content-center">
+            <h1>Welcome to Wheels on Demand Car Rentals</h1>
+        <p>Discover a world of convenience and flexibility with our wide range of rental cars. Whether you're planning a weekend getaway or a long road trip, we have the perfect vehicle for your needs. Choose from our collection of high-quality cars and enjoy a seamless booking experience.</p>
+        <p>Why choose Wheels on Demand?</p>
+        <ul>
+            <li>Wide selection of vehicles</li>
+            <li>Competitive rental rates</li>
+            <li>Easy online booking</li>
+            <li>Flexible pickup and drop-off locations</li>
+            <li>24/7 customer support</li>
+        </ul>
+        <p>Start your journey with us today!</p>
+        
+        </div>
+    </main>
+    {% endif %}
+    
+{% endblock %}

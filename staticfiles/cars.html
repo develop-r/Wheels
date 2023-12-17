@@ -1,0 +1,98 @@
+{% load static %}
+    <div class="container-fluid p-0">
+
+        <div class="mb-6">
+            <!-- <h1 class="h3 d-inline align-middle">Cars</h1> -->
+            <!-- <a class="badge bg-dark text-white ms-2" href="upgrade-to-pro.html">
+                Cars
+            </a> -->
+            <form id="filter-form">
+                <div class="mb-3">
+                    <!-- <h4 class="mb-3">Filter Cars</h4> -->
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="filter-type" id="filter-by-city" value="city" checked>
+                        <label class="form-check-label" for="filter-by-city">Filter by City</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="filter-type" id="filter-by-location" value="location">
+                        <label class="form-check-label" for="filter-by-location">Filter by Location</label>
+                    </div>
+                </div>
+                <div id="city-filter" class="mb-3">
+                    <label class="form-label">Select City:</label>
+                    <input class="form-control" type="text" id="city" id="city" name="city">
+                </div>
+                <div id="location-filter" class="mb-3" style="display: none;">
+                    <input class="form-control" type="hidden" id="user-lat" name="user-lat" value="">
+                    <input class="form-control" type="hidden" id="user-long" name="user-long" value="">
+                    <label class="form-label">Maximum Distance:</label>
+                    <input class="form-control" type="number" id="max-distance" name="max-distance">
+                </div>
+                <div class="text-center mt-3">
+                    <button type="submit" class="btn btn-primary">Apply Filter</button>
+                </div>
+            </form>
+        </div>
+        <div class="row">
+            {% for car in cars %}
+            <div class="col-12 col-md-3">
+                <div class="card">
+                    <img class="card-img-top" src={{car.car_photo}} alt="Unsplash">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">{{car.car_name}}</h5>
+                    </div>
+                    <div class="card-body">
+                        <h5>Model: {{car.car_model}}</h5>
+                        <h5>Year: {{car.car_year}}</h5>
+                        <h5>Miles Driven: {{car.miles_driven}}miles</h5>
+                        <h5>Price per Day: {{car.cost_per_day}}$</h5>
+                        <h5>Pickup Address: {{car.pickup_location}}</h5>
+                        <p class="card-text"></p>
+                        <a href="{% url 'book' %}?car_id={{car.car_id}}" class="btn btn-primary">Book</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+<script>
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+
+        // Get user's location from the IP-API.com API
+        fetch('http://ip-api.com/json')
+            .then(response => response.json())
+            .then(data => {
+                console.log(data)
+                // Update the latitude and longitude input fields
+                const userLatInput = document.getElementById('user-lat');
+                const userLongInput = document.getElementById('user-long');
+                
+                userLatInput.value = data.lat;
+                userLongInput.value = data.lon;
+            })
+            .catch(error => {
+                console.error('Error fetching user location:', error);
+            });
+
+        
+
+        const filterTypeRadio = document.querySelectorAll('input[name="filter-type"]');
+        const cityFilter = document.getElementById('city-filter');
+        const locationFilter = document.getElementById('location-filter');
+
+        filterTypeRadio.forEach((radio) => {
+            radio.addEventListener('change', function () {
+                if (this.value === 'city') {
+                    cityFilter.style.display = 'block';
+                    locationFilter.style.display = 'none';
+                } else if (this.value === 'location') {
+                    cityFilter.style.display = 'none';
+                    locationFilter.style.display = 'block';
+                }
+            });
+        });
+});
+
+</script>

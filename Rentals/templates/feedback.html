@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block content %}
+<main class="d-flex w-100">
+    <div class="container d-flex flex-column">
+        <div class="row vh-100">
+            <div class="col-sm-10 col-md-8 col-lg-6 mx-auto d-table h-100">
+                <div class="d-table-cell align-middle">
+
+                    <div class="text-center mt-4">
+                        <h1 class="h2">Feedback</h1>
+                        <p class="lead">
+                            
+                        </p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="m-sm-4">
+                                <form method="POST">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label class="form-label">Rating</label>
+                                        <div class="rating">
+                                            <input type="radio" name="rating" value="5" id="star5" required>
+                                            <label for="star5">5★</label>
+                                            <input type="radio" name="rating" value="4" id="star4" required>
+                                            <label for="star4">4★</label>
+                                            <input type="radio" name="rating" value="3" id="star3" required>
+                                            <label for="star3">3★</label>
+                                            <input type="radio" name="rating" value="2" id="star2" required>
+                                            <label for="star2">2★</label>
+                                            <input type="radio" name="rating" value="1" id="star1" required>
+                                            <label for="star1">1★</label>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Feedback</label>
+                                        <input class="form-control form-control-lg" type="text" name="feedback" placeholder="Write feedback" required/>
+                                    </div>
+                                    <div class="text-center mt-3">
+                                        <button class="btn btn-lg btn-primary">Submit</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

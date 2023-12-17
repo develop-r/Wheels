@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+{% block content %}
+<main class="d-flex w-100">
+    <div class="container d-flex flex-column">
+        <div class="row vh-100">
+            <div class="col-sm-10 col-md-8 col-lg-6 mx-auto d-table h-100">
+                <div class="d-table-cell align-middle">
+
+                    <div class="text-center mt-4">
+                        <h1 class="h2">Complete Booking</h1>
+                        <p class="lead">
+                            
+                        </p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="m-sm-4">
+                                <form>
+                                    <div class="mb-3">
+                                        <label class="form-label">Start Date</label>
+                                        <input class="form-control form-control-lg datepicker" type="text" id="start_date" name="start_date"  placeholder="Enter Start Date" autocomplete="off"/>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">End Date</label>
+                                        <input class="form-control form-control-lg datepicker" type="text" name="end_date" id="end_date" placeholder="Enter End Date" autocomplete="off"/>
+                                    </div>
+                                    <div class="text-center mt-3">
+                                        <a id="check_button" class="btn btn-lg btn-primary">Check Availability</a>
+                                        <!-- <button type="submit" class="btn btn-lg btn-primary">Sign up</button> -->
+                                    </div>
+                                </form>
+                                <br>
+                                
+                                <form>
+                                    <div class="mb-3 availability-message"></div>
+                                    <input type="hidden" name="booking_start_date" id="booking_start_date" value="" />
+                                    <input type="hidden" name="booking_end_date" id="booking_end_date" value="" />
+                                    <input type="hidden" name="car_id" id="car_id" value="" />
+                                    <div class="mb-3">
+                                        <label class="form-label">Total Amount:</label>
+                                        <input class="form-control form-control-lg" type="number" name="total_amount"  value="" readonly/>
+                                    </div>
+                                    <div class="mb-3 availability-message">Enter the Card Details to complete payment and Confirm Booking</div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Card Number:</label>
+                                        <input class="form-control form-control-lg" type="number" id="card_number" name="card_number"  placeholder="Enter Credit Card Number"/>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Expiry:</label>
+                                        <input class="form-control form-control-lg" type="text" id="card_expiry_date" name="card_expiry_date"  placeholder="Enter Card Expiry Date in the format MM/YY"/>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">CVV:</label>
+                                        <input class="form-control form-control-lg" type="number" id="card_cvv" name="card_cvv"  placeholder="Enter Card CVV"/>
+                                    </div>
+                                    <div class="text-center mt-3">
+                                        <button id="submit_button" class="btn btn-primary">Confirm Booking</button>
+                                    </div>
+                                </form>
+                                {% if total_amount %}
+                                {% endif %}
+                                <br>
+                                <br>
+                                <br>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<script>
+    document.getElementById('submit_button').addEventListener('click', function (event) {
+        event.preventDefault();
+        const cardNumberInput = document.getElementById('card_number');
+        const cardExpiryInput = document.getElementById('card_expiry_date');
+        const cardCvvInput = document.getElementById('card_cvv');
+        const totalAmountInput = document.querySelector('input[name="total_amount"]');
+        const booking_start_date = document.querySelector('input[name="booking_start_date"]');
+        const booking_end_date = document.querySelector('input[name="booking_end_date"]');
+    
+        const cardNumberPattern = /^\d{16}$/;
+        const cardExpiryPattern = /^(0[1-9]|1[0-2])\/\d{2}$/;
+        const cardCvvPattern = /^\d{3,4}$/;
+
+        if (totalAmountInput.value === '' || booking_start_date.value === '' || booking_end_date.value === '') {
+            alert('Please select the dates and check availability to continuue booking');
+            return;
+        }
+    
+        if (!cardNumberPattern.test(cardNumberInput.value)) {
+            alert('Please enter a valid 16-digit card number.');
+            return;
+        }
+    
+        if (!cardExpiryPattern.test(cardExpiryInput.value)) {
+            alert('Please enter a valid expiry date in the format MM/YY.');
+            return;
+        }
+    
+        if (!cardCvvPattern.test(cardCvvInput.value)) {
+            alert('Please enter a valid CVV (3 or 4 digits).');
+            return;
+        }
+    
+        // Split the expiry date into month and year
+        const [expiryMonth, expiryYear] = cardExpiryInput.value.split('/');
+    
+        // Create Date objects for the card's expiry date and today's date
+        const expiryDate = new Date(`20${expiryYear}`, expiryMonth - 1); // Subtract 1 from month to account for 0-based index
+        const today = new Date();
+    
+        // Compare the expiry date with today's date
+        if (expiryDate < today) {
+            alert('The card has expired. Please use a valid card.');
+            return;
+        }
+        
+        const car = JSON.parse('{% filter escapejs %}{{ car|safe }}{% endfilter %}');
+        console.log(car);
+        // If all validations pass, you can proceed with form submission
+        // Create an object with the form data
+        const startDateInput = new Date(booking_start_date.value); // startDate is in your desired format
+        const endDateInput = new Date(booking_end_date.value); // endDate is in your desired format
+        
+        // Convert the dates to YYYY-MM-DD format
+        const formattedStartDate = startDateInput.toISOString().split('T')[0];
+        const formattedEndDate = endDateInput.toISOString().split('T')[0];
+        const formData = {
+            car_id: car[0].pk,
+            booking_start_date: formattedStartDate,
+            booking_end_date: formattedEndDate,
+            total_amount: totalAmountInput.value,
+        };
+        const csrfToken = '{{ csrf_token }}';
+        // Make a POST request to the 'book' URL
+        fetch('{% url "book" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken, // Include the CSRF token in the headers
+            },
+            body: JSON.stringify(formData),
+        })
+        .then(response => {
+            if (response.ok) {
+                // Handle a successful response (e.g., redirect to the confirmation page)
+                window.location.href = '{% url "confirmation" %}';
+            } else {
+                // Handle errors and display appropriate messages
+                response.json().then(data => {
+                    alert(data.message); // Display an error message to the user
+                });
+            }
+        })
+        .catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
+        });
+    });
+    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const csrfToken = '{{ csrf_token }}';
+            console.log(csrfToken)
+            // // Get the list of blocked dates from Django (passed in the context)
+            const blockedDates = JSON.parse('{% filter escapejs %}{{ blocked_dates|safe }}{% endfilter %}');
+            console.log(blockedDates);
+    
+            $('#start_date').datepicker({
+                format: 'yyyy-mm-dd',
+                autoclose: true,
+                todayHighlight: true,
+                datesDisabled: blockedDates,
+                startDate: '0d',
+                endDate: '+3m',
+                orientation: 'bottom'
+                
+            });
+            $('#end_date').datepicker({
+                format: 'yyyy-mm-dd',
+                autoclose: true,
+                todayHighlight: true,
+                datesDisabled: blockedDates,
+                startDate: '0d',
+                endDate: '+3m',
+                orientation: 'bottom'
+                
+            });
+        });
+    </script>
+    <script>
+        // Function to update the availability information
+        function updateAvailabilityInformation(totalAmount, startDate, endDate) {
+            const availabilityMessage = document.querySelector('.availability-message');
+            const totalAmountInput = document.querySelector('input[name="total_amount"]');
+            const booking_start_date = document.querySelector('input[name="booking_start_date"]');
+            const booking_end_date = document.querySelector('input[name="booking_end_date"]');
+            
+            // Update the availability message
+            availabilityMessage.textContent = 'Selected Car Available For Selected Dates';
+            
+            // Update the total amount input value
+            totalAmountInput.value = totalAmount;
+            booking_start_date.value = startDate;
+            booking_end_date.value = endDate;
+        }
+
+        document.getElementById('check_button').addEventListener('click', function () {
+            const blockedDates = JSON.parse('{% filter escapejs %}{{ blocked_dates|safe }}{% endfilter %}');
+            console.log(blockedDates);
+            const car = JSON.parse('{% filter escapejs %}{{ car|safe }}{% endfilter %}');
+            console.log(car);
+            const startDateInput = document.getElementById('start_date');
+            const endDateInput = document.getElementById('end_date');
+            // Parse the start and end dates
+            const startDate = new Date(startDateInput.value);
+            const endDate = new Date(endDateInput.value);
+
+            // Check if start date is greater than end date
+            if (startDate > endDate) {
+                alert('Start date should be less than or equal to end date.');
+                return;
+            }
+
+            // Check if any blocked dates fall within the range
+            for (const blockedDate of blockedDates) {
+                const blockedDateObj = new Date(blockedDate);
+                if (blockedDateObj >= startDate && blockedDateObj <= endDate) {
+                    alert('Blocked dates should not fall within the selected range.');
+                    return;
+                }
+            }
+            const timeDifference = endDate - startDate;
+            const daysDifference = Math.floor(timeDifference / (24 * 60 * 60 * 1000));
+            const totalAmount = (daysDifference+1) * parseFloat(car[0].fields.cost_per_day);
+            updateAvailabilityInformation(totalAmount, startDate, endDate);
+            // If all validations pass, you can proceed with form submission
+            // alert('Form submitted successfully!');
+        });
+    </script>
+    
+    
+      
+    
+{% endblock %}
